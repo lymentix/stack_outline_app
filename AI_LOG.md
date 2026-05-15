@@ -1,6 +1,6 @@
 # AI Assistance Log
 
-**CS 665 – Database Systems | Project 3**  
+**CS 665 – Database Systems | Project 3**
 **Policy:** All AI assistance must be disclosed per course requirements.
 
 ---
@@ -11,76 +11,55 @@
 |---|---|
 | **Date** | 2026-05-15 |
 | **Tool** | GitHub Copilot (Claude Sonnet 4.6 model, VS Code extension) |
-| **Context** | Initial project scaffolding and full feature implementation |
+| **Context** | Building the main app features |
 
 ### Prompt Provided to AI
 
-> I'm working on Project 3 for CS 665 (Database Systems) at WSU. It's a full-stack Python web app
-> built on a database schema I designed in Project 2.
-> Tech stack: Python 3.9, Flask 3.0.3, Flask-SQLAlchemy 3.1.1, SQLite (app.db), Jinja2 templates,
-> HTML/CSS. Using an app factory pattern with a Blueprint.
-> [Full schema description: publishers, games, players, player_games, play_sessions with
-> relationships and cascade deletes.]
-> Project 3 requirements I still need to implement: Multi-table CRUD, Relationship display,
-> Transaction logic, Server-side validation, Summary dashboard, Seed data, NORMALIZATION.md,
-> AI_LOG.md, README.md, Git.
-> Current status: Models and basic index route are working. App runs at localhost:5000 and shows
-> empty games/players lists. Need to build everything else.
+> I'm working on Project 3 for CS 665 at WSU. It's a full-stack Python web app built on the
+> database I designed in Project 2.
+>
+> Tech stack: Python 3.9, Flask, Flask-SQLAlchemy, SQLite, Jinja2 templates, HTML/CSS.
+>
+> Database tables: publishers, games, players, player_games, play_sessions. The relationships
+> are publishers → games, games → player_games ← players, and player_games → play_sessions.
+>
+> I still need to build: CRUD for games and players, a player detail page showing their games,
+> a play session logger that updates total play hours in one transaction, server-side
+> validation, a dashboard with COUNT/SUM/AVG stats, and seed data.
+>
+> The models and a basic index page are already working. Help me build the rest.
 
 ### AI Output Summary
 
-GitHub Copilot:
+Copilot built out the main app features:
 
-1. **Rewrote `app/routes.py`** — complete Blueprint with:
-   - Dashboard route using `func.count`, `func.avg`, `func.sum`, top-5 query with `GROUP BY`
-   - Full CRUD for Games: `game_new`, `game_edit`, `game_delete`
-   - Full CRUD for Players: `player_new`, `player_edit`, `player_delete`, `player_detail`
-   - `log_session` route with atomic transaction (insert + recalculate `total_play_hours`)
-   - `/seed` route populating 3 publishers, 4 games, 3 players, 5 `player_games`, 3 sessions
-   - `_valid_email()` helper using `re.match` for server-side email validation
+1. **`app/routes.py`** — wrote all the routes:
+   - Dashboard with stats (total games, total players, average rating, total hours)
+   - Create/edit/delete pages for games
+   - Create/edit/delete pages for players
+   - Player detail page showing all games they own
+   - Play session logger that updates total play hours in the same transaction
+   - A `/seed` route that adds sample publishers, games, and players
+   - Email validation using regex
 
-2. **Updated `app/templates/base.html`** — added full navbar with links to Dashboard, Games,
-   Players, Seed DB; added Bootstrap flash message block using `get_flashed_messages`.
+2. **HTML templates** — created the pages for:
+   - Dashboard (`index.html`) with stat cards and top games table
+   - Games list and add/edit form
+   - Players list, player detail page, add/edit form, and session logging form
+   - Updated the base template with a navbar and flash messages
 
-3. **Rewrote `app/templates/index.html`** — dashboard with stat cards for total games, total
-   players, avg rating, total hours; top-played games table; quick-links card.
-
-4. **Created `app/templates/games/index.html`** — sortable table with Edit/Delete per row.
-
-5. **Created `app/templates/games/form.html`** — shared create/edit form with publisher dropdown,
-   date + price inputs.
-
-6. **Created `app/templates/players/index.html`** — table with game-count badge per player.
-
-7. **Created `app/templates/players/detail.html`** — library table with rating badge, hours, and
-   session count; totals footer row using Jinja2 namespace trick.
-
-8. **Created `app/templates/players/form.html`** — create/edit form for player registration.
-
-9. **Created `app/templates/players/log_session.html`** — session logging form with game
-   selector, date, and duration.
-
-10. Ran smoke tests via Flask test client confirming all routes return HTTP 200.
-
-11. Fixed a Jinja2 `TemplateAssertionError: block defined twice` bug (cannot use `{% block %}`
-    inside `{% if %}`); moved conditional logic inside a single `{% block title %}`.
+3. **Fixed a template error** — Jinja2 wouldn't let me put a `{% block %}` inside an `{% if %}`,
+   so Copilot rewrote it with the condition inside the block instead.
 
 ### My Modifications and Verification
 
-- **Verified model compatibility:** Confirmed all route logic (foreign keys, relationship
-  attribute names, cascade behaviour) matched the `models.py` I had already written.
-- **Tested seed data manually:** Navigated to `/seed` in the browser and confirmed all five
-  tables populated correctly; ran `/players/1` to verify the seeded library entries appeared.
-- **Reviewed validation logic:** Confirmed `_valid_email` regex matches standard email formats;
-  confirmed the `rating` range (1–10) is enforced both in the DB `CheckConstraint` (models.py)
-  and by the form's `min`/`max` HTML attributes.
-- **Reviewed transaction logic:** Traced through the `log_session` route to confirm
-  `db.session.flush()` is called before the `SUM` aggregate so the new session row is included
-  in the recalculation within the same transaction.
-- **Confirmed idempotent seed:** Verified the `if Publisher.query.first()` guard prevents
-  duplicate seeding on subsequent visits.
-- **Template audit:** Reviewed all eight Jinja2 templates for correctness; confirmed `vals.get()`
-  calls use the correct form field names; confirmed delete confirm dialogs name the correct item.
+- Made sure all the route code matched the column names and relationships in my `models.py`.
+- Tested the seed route in the browser and confirmed all the tables filled with sample data.
+- Checked the player detail page to make sure the owned games showed up correctly.
+- Confirmed the rating validation (1–10) works on both the form and the database.
+- Walked through the session logger to make sure the new session and updated play hours both
+  save together as one transaction.
+- Reviewed each template to make sure form fields and delete prompts referenced the right items.
 
 ---
 
@@ -90,41 +69,34 @@ GitHub Copilot:
 |---|---|
 | **Date** | 2026-05-15 |
 | **Tool** | GitHub Copilot (Claude Sonnet 4.6 model, VS Code extension) |
-| **Context** | Documentation deliverables |
+| **Context** | Writing project documentation |
 
 ### Prompt Provided to AI
 
-> [Pasted the full Project 3 requirements PDF.]  
-> Help me complete the remaining deliverables: README.md, NORMALIZATION.md, AI_LOG.md,
-> schema.sql, and .gitignore.
+> I attached the Project 3 requirements PDF. Help me write the remaining files: README.md,
+> NORMALIZATION.md, AI_LOG.md, schema.sql, and .gitignore.
 
 ### AI Output Summary
 
-GitHub Copilot generated:
+Copilot generated:
 
-1. **`README.md`** — professional documentation including project description, tech stack table,
-   project structure tree, step-by-step installation, database setup section, usage table of
-   URLs, and a features section explaining each requirement (CRUD, relationships, transactions,
-   validation, dashboard).
+1. **`README.md`** — project description, tech stack, folder structure, install steps, how to
+   set up the database, and what each feature does.
 
-2. **`NORMALIZATION.md`** — full 3NF audit covering: original flat schema, all 7 functional
-   dependencies in tabular form, update/insertion/deletion anomaly examples for the original
-   design, step-by-step decomposition from flat → 1NF → 2NF → 3NF with justification for the
-   `total_play_hours` cache, and the final relational schema with relationship table.
+2. **`NORMALIZATION.md`** — the 3NF write-up: functional dependencies, anomaly examples for
+   a flat schema, the decomposition from 1NF to 2NF to 3NF, and the final schema.
 
-3. **`schema.sql`** — DDL `CREATE TABLE` statements matching the SQLAlchemy models exactly,
-   with `CHECK` constraint on `rating`, `UNIQUE` on `email`, and all foreign keys.
+3. **`schema.sql`** — `CREATE TABLE` statements matching the SQLAlchemy models, including the
+   rating check constraint, unique email, and foreign keys.
 
-4. **`AI_LOG.md`** (this file) — structured disclosure of both AI assistance sessions.
+4. **`AI_LOG.md`** — this file.
 
-5. Verified `.gitignore` already covered `venv/`, `__pycache__/`, `instance/`, `.env`.
+5. Checked `.gitignore` — already had `venv/`, `__pycache__/`, `instance/`, and `.env`.
 
 ### My Modifications and Verification
 
-- **Cross-checked NORMALIZATION.md** against my actual `models.py` to confirm all column names,
-  data types, and relationships were accurately described.
-- **Cross-checked schema.sql** — made sure the DDL matched the SQLAlchemy model definitions
-  (e.g., `NUMERIC(6,2)` for price and hours, `CHECK(rating >= 1 AND rating <= 10)`).
-- **README reviewed for accuracy** — all URLs, file paths, and feature descriptions match the
-  actual running application.
-- **Added personal context** to this AI log (the exact prompts I used, my verification steps).
+- Compared `NORMALIZATION.md` against `models.py` to make sure the column names and
+  relationships were right.
+- Compared `schema.sql` against my models to make sure the data types and constraints matched.
+- Read through the README to make sure all the URLs and file paths actually work.
+- Added my real prompts to this log instead of generic descriptions.

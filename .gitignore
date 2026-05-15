@@ -9,13 +9,17 @@ __pycache__/
 venv/
 env/
 
-# Flask
+# Flask / SQLite
 instance/
 *.db
+
+# Environment variables
+.env
 
 # VS Code
 .vscode/
 
 # OS
 .DS_Store
+Thumbs.db
 Thumbs.db

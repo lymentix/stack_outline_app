@@ -1,25 +1,96 @@
 {% extends "base.html" %}
 
-{% block title %}Home | Stack Outline App{% endblock %}
+{% block title %}Dashboard | Game Library Tracker{% endblock %}
 
 {% block content %}
-<section class="mb-4">
-  <h1 class="h3">Flask + SQLAlchemy + Jinja2 Starter</h1>
-  <p class="text-muted mb-0">
-    This page demonstrates a minimal HTML5/CSS3 frontend with Bootstrap and server-side rendering.
-  </p>
-</section>
+<h1 class="h3 mb-4">Dashboard</h1>
 
-<section>
-  <h2 class="h5">Example Records</h2>
-  {% if records %}
-    <ul class="list-group">
-      {% for record in records %}
-        <li class="list-group-item">{{ record.title }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <div class="alert alert-info mb-0">No records yet. Add some through the Flask shell or extend routes with a form/API.</div>
-  {% endif %}
-</section>
+<div class="row g-3 mb-5">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-bg-primary h-100">
+      <div class="card-body">
+        <div class="small text-white-50">Total Games</div>
+        <div class="display-6 fw-bold">{{ total_games }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-bg-success h-100">
+      <div class="card-body">
+        <div class="small text-white-50">Total Players</div>
+        <div class="display-6 fw-bold">{{ total_players }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-bg-warning h-100">
+      <div class="card-body">
+        <div class="small">Avg Rating</div>
+        <div class="display-6 fw-bold">{{ avg_rating }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-bg-info h-100">
+      <div class="card-body">
+        <div class="small">Total Hours Logged</div>
+        <div class="display-6 fw-bold">{{ "%.1f"|format(total_hours) }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold">Top Played Games</div>
+      <div class="card-body p-0">
+        {% if top_games %}
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Title</th><th class="text-end">Hours</th></tr>
+            </thead>
+            <tbody>
+              {% for title, hours in top_games %}
+              <tr>
+                <td class="text-muted">{{ loop.index }}</td>
+                <td>{{ title }}</td>
+                <td class="text-end">{{ "%.1f"|format(hours|float) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="text-muted p-3 mb-0">No play data yet. <a href="{{ url_for('main.seed') }}">Seed the database</a> to get started.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold">Quick Links</div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Games
+          <div>
+            <a href="{{ url_for('main.games_index') }}" class="btn btn-sm btn-outline-primary me-1">View All</a>
+            <a href="{{ url_for('main.game_new') }}" class="btn btn-sm btn-primary">+ Add</a>
+          </div>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Players
+          <div>
+            <a href="{{ url_for('main.players_index') }}" class="btn btn-sm btn-outline-success me-1">View All</a>
+            <a href="{{ url_for('main.player_new') }}" class="btn btn-sm btn-success">+ Add</a>
+          </div>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Sample Data
+          <a href="{{ url_for('main.seed') }}" class="btn btn-sm btn-warning">Seed DB</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
 {% endblock %}

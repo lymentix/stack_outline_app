@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ player.username }} | Game Library Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ player.username }}</h1>
+    <p class="text-muted mb-0">{{ player.email }} &middot; Joined {{ player.join_date.strftime("%B %d, %Y") if player.join_date else "—" }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('main.log_session', player_id=player.player_id) }}" class="btn btn-primary">+ Log Session</a>
+    <a href="{{ url_for('main.player_edit', player_id=player.player_id) }}" class="btn btn-outline-secondary">Edit</a>
+    <a href="{{ url_for('main.players_index') }}" class="btn btn-outline-secondary">← Back</a>
+  </div>
+</div>
+
+<h2 class="h5 mb-3">Game Library ({{ player.player_games|length }})</h2>
+
+{% if player.player_games %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Game</th>
+          <th>Genre</th>
+          <th class="text-center">Rating</th>
+          <th>Purchased</th>
+          <th class="text-end">Hours Played</th>
+          <th class="text-center">Sessions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pg in player.player_games %}
+        <tr>
+          <td class="fw-semibold">{{ pg.game.title }}</td>
+          <td>{{ pg.game.genre or "—" }}</td>
+          <td class="text-center">
+            {% if pg.rating %}
+              <span class="badge bg-warning text-dark">{{ pg.rating }}/10</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ pg.purchase_date.strftime("%b %d, %Y") if pg.purchase_date else "—" }}</td>
+          <td class="text-end">{{ "%.1f"|format(pg.total_play_hours|float) }} hrs</td>
+          <td class="text-center">
+            <span class="badge bg-secondary">{{ pg.play_sessions|length }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-light">
+        <tr>
+          <th colspan="4" class="text-end">Totals:</th>
+          <th class="text-end">
+            {{ "%.1f"|format(player.player_games | sum(attribute='total_play_hours') | float) }} hrs
+          </th>
+          <th class="text-center">
+            {% set total_sessions = namespace(n=0) %}
+            {% for pg in player.player_games %}
+              {% set total_sessions.n = total_sessions.n + pg.play_sessions|length %}
+            {% endfor %}
+            {{ total_sessions.n }}
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+{% else %}
+  <div class="alert alert-info">
+    This player has no games yet. Games are added when a play session is logged.
+  </div>
+{% endif %}
+{% endblock %}
